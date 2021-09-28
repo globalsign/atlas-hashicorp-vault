@@ -1,0 +1,28 @@
+on: [push]
+name: Test
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.16.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Test and Cover
+      shell: bash
+      env:
+          ATLAS_API_CREDS_JSON: ${{ secrets.ATLAS_API_CREDS_JSON }}
+          ATLAS_API_CERT_PEM: ${{ secrets.ATLAS_API_CERT_PEM }}
+          ATLAS_API_CERT_KEY_PEM: ${{ secrets.ATLAS_API_CERT_KEY_PEM }}
+      run: |
+        mkdir -p "./.private/dev-creds/"
+        echo "$ATLAS_API_CREDS_JSON" > "./.private/dev-creds/api.json"
+        echo "$ATLAS_API_CERT_PEM" > "./.private/dev-creds/cert.pem"
+        echo "$ATLAS_API_CERT_KEY_PEM" > "./.private/dev-creds/key.pem"
+        ./scripts/test-and-cover.sh .
