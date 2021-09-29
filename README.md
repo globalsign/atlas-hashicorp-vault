@@ -1,26 +1,28 @@
 # Hashicorp GlobalSign Atlas Certificate Provider
 
-`vault-plugin-secrets-atlas` lets you manage issue GlobalSign Atlas backed certificates in vault.
+`atlas-hashicorp-vault` plugin lets you manage issue GlobalSign Atlas backed certificates in vault.
 
 - [API Docs](https://github.com/globalsign/atlas-hashicorp-vault/blob/master/website/pages/api-docs/secret/vault-plugin-secrets-atlas/index.mdx)
 - [Getting Started Guide](https://github.com/globalsign/atlas-hashicorp-vault/blob/master/website/pages/docs/secrets/vault-plugin-secrets-atlas/index.mdx)
 - [MicroK8s Certificate Manager Tutorial](https://github.com/globalsign/atlas-hashicorp-vault/blob/master/K8S_CERT_MANAGER.md)
 - [Releases](https://github.com/globalsign/atlas-hashicorp-vault/releases)
 
+## Demo
 [![asciicast](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB.svg)](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB) 
 ## Installation
 
 Before you can use the Plugin's API you will need to install the vault plugin:
 
+_**(Note: We have automated most of these steps and user can directly navigate to** `atlas-hashicorp-vault` **and run** `make`)_
 1. Create the [directory](https://www.vaultproject.io/docs/internals/plugins#plugin-directory)
    where your Vault server will look for plugins
 
-2. Download the latest `vault-plugin-secrets-atlas` [release package](../../releases/latest)
-   for your operating system. Note that the URL for the source binnary file, referenced below, changes as new versions of the
+2. Download the latest `atlas-hashicorp-vault` plugin [release package](../../releases/latest)
+   for your operating system. Note that the URL for the source binary file, referenced below, changes as new versions of the
    plugin are released.
 
    ```bash
-   $ curl https://github.com/globalsign/atlas-hashicorp-vault/releases/download/v0.1.0/atlas-linux-amd64 -o /etc/vault/vault_plugins/atlas
+   $ curl https://github.com/globalsign/atlas-hashicorp-vault/releases/download/v1.0/atlas-linux-amd64 -o /etc/vault/vault_plugins/atlas
    $ chmod +x /etc/vault/vault_plugins/atlas
    ```
 
@@ -33,13 +35,13 @@ Before you can use the Plugin's API you will need to install the vault plugin:
 
 4. Start your Vault using the [server command](https://www.vaultproject.io/docs/commands/server).
 
-5. Get the SHA-256 checksum of the `vault-plugin-secrets-atlas` plugin binary:
+5. Get the SHA-256 checksum of the `atlas-hashicorp-vault` plugin binary:
 
    ```bash
-   $ PLUGIN_SHA256=$(sha256sum /etc/vault/vault_plugins/vault-plugin-secrets-atlas | cut -d' ' -f1)
+   $ PLUGIN_SHA256=$(sha256sum /etc/vault/vault_plugins/atlas-hashicorp-vault | cut -d' ' -f1)
    ```
 
-6. Register the `vault-plugin-secrets-atlas` plugin in the Vault
+6. Register the `atlas-hashicorp-vault` plugin in the Vault
    [system catalog](https://www.vaultproject.io/docs/internals/plugins#plugin-catalog):
 
    ```bash
