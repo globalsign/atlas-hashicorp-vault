@@ -1,4 +1,4 @@
-# Hashicorp GlobalSign Atlas Certificate Provider
+# GlobalSign Atlas Certificate Provider Plugin for Hashicorp Vault 
 
 `atlas-hashicorp-vault` plugin lets you manage issue GlobalSign Atlas backed certificates in vault.
 
