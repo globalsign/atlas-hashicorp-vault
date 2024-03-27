@@ -1,4 +1,4 @@
-# GlobalSign Atlas Certificate Provider Plugin for Hashicorp Vault 
+# GlobalSign Atlas Certificate Provider Plugin for Hashicorp Vault
 
 `atlas-hashicorp-vault` plugin lets you manage issue GlobalSign Atlas backed certificates in vault.
 
@@ -8,7 +8,7 @@
 - [Releases](https://github.com/globalsign/atlas-hashicorp-vault/releases)
 
 ## Demo
-[![asciicast](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB.svg)](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB) 
+[![asciicast](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB.svg)](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB)
 ## Installation
 
 Before you can use the Plugin's API you will need to install the vault plugin:
@@ -22,10 +22,17 @@ _**(Note: We have automated most of these steps and user can directly navigate t
    plugin are released.
 
    ```bash
-   $ curl https://github.com/globalsign/atlas-hashicorp-vault/releases/download/v1.0/atlas-linux-amd64 -o /etc/vault/vault_plugins/atlas
+   $ curl https://github.com/globalsign/atlas-hashicorp-vault/releases/latest/download/atlas-linux-amd64 -o /etc/vault/vault_plugins/atlas
    $ chmod +x /etc/vault/vault_plugins/atlas
    ```
 
+   note: the above binary works was built on an ubuntu base, if you want to are running in containers, you probably want to use this one
+   https://github.com/globalsign/atlas-hashicorp-vault/releases/latest/download/atlas-linux-containers
+
+   These links above will get the latest binary, if you want to pin to a specific one, use a URL like to following
+
+   https://github.com/globalsign/atlas-hashicorp-vault/releases/download/v1.0/atlas-linux-amd64
+   
 3. Update the Vault [server configuration](https://www.vaultproject.io/docs/configuration/)
    to specify the plugin directory:
 
