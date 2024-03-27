@@ -40,9 +40,9 @@ type ClientConfig struct {
 // Types requied to unmarshal Valiation Policy from HVCA
 type (
 	ValidationPolicy struct {
-		ExtendedKeyUsages  EKUPolicy `json:"extended_key_usages,omitempty"`
-		KeyUsages          KeyUsagePolicy `json:"key_usages,omitempty"`
-		Signature          SignaturePolicy `json:"signature,omitemtpy"`
+		ExtendedKeyUsages EKUPolicy       `json:"extended_key_usages,omitempty"`
+		KeyUsages         KeyUsagePolicy  `json:"key_usages,omitempty"`
+		Signature         SignaturePolicy `json:"signature,omitemtpy"`
 	}
 
 	EKUPolicy struct {
@@ -56,15 +56,15 @@ type (
 	}
 
 	KeyUsagePolicy struct {
-		ContentCommitment     string `json:"content_commitment"`
-		CrlSign string `json:"crl_sign"`
-		DataEncipherment string `json:"data_encipherment"`
-		DecipherOnly string `json:"decipher_only"`
-		DigitalSignature string `json:"digital_signature"`
-		EncipherOnly string `json:"encipher_only"`
-		KeyAgreement string `json:"key_agreement"`
+		ContentCommitment  string `json:"content_commitment"`
+		CrlSign            string `json:"crl_sign"`
+		DataEncipherment   string `json:"data_encipherment"`
+		DecipherOnly       string `json:"decipher_only"`
+		DigitalSignature   string `json:"digital_signature"`
+		EncipherOnly       string `json:"encipher_only"`
+		KeyAgreement       string `json:"key_agreement"`
 		KeyCertificateSign string `json:"key_certificate_sign"`
-		KeyEncipherment string `json:"key_encipherment"`
+		KeyEncipherment    string `json:"key_encipherment"`
 	}
 
 	ListPolicy struct {
@@ -78,8 +78,8 @@ type (
 		List     []string `json:"list"`
 		Presence string   `json:"presence"`
 	}
-
 )
+
 // Client acts as a interface between the local process and Globalsign ATLAS.
 type Client interface {
 	// Login performs the exchange of
@@ -343,7 +343,8 @@ func (c *client) RevokeCert(ctx context.Context, id string) error {
 }
 
 // consumeAndCloseResponseBody is designed to handle potential resource leaks from not fully consumed request bodies.
-//   ref https://github.com/google/go-github/pull/317
+//
+//	ref https://github.com/google/go-github/pull/317
 func consumeAndCloseResponseBody(r *http.Response) {
 	defer r.Body.Close()
 	io.Copy(ioutil.Discard, r.Body)

@@ -28,12 +28,11 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/go-test/deep"
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/vault/sdk/helper/certutil"
 	"github.com/hashicorp/vault/sdk/helper/strutil"
 	"github.com/hashicorp/vault/sdk/logical"
 
-	logicaltest "github.com/hashicorp/vault/helper/testhelpers/logical"
+	//logicaltest "github.com/hashicorp/vault/helper/testhelpers/logical"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/crypto/cryptobyte"
 	cbbasn1 "golang.org/x/crypto/cryptobyte/asn1"
@@ -41,6 +40,80 @@ import (
 
 	"github.com/globalsign/atlas-hashicorp-vault/pkg/atlas"
 )
+
+// TestCheckFunc is the callback used for Check in TestStep.
+type TestCheckFunc func(*logical.Response) error
+
+// TestCase is a single set of tests to run for a backend. A TestCase
+// should generally map 1:1 to each test method for your acceptance
+// tests.
+type TestCase struct {
+	// Precheck, if non-nil, will be called once before the test case
+	// runs at all. This can be used for some validation prior to the
+	// test running.
+	PreCheck func()
+
+	// LogicalBackend is the backend that will be mounted.
+	LogicalBackend logical.Backend
+
+	// LogicalFactory can be used instead of LogicalBackend if the
+	// backend requires more construction
+	LogicalFactory logical.Factory
+
+	// CredentialBackend is the backend that will be mounted.
+	CredentialBackend logical.Backend
+
+	// CredentialFactory can be used instead of CredentialBackend if the
+	// backend requires more construction
+	CredentialFactory logical.Factory
+
+	// Steps are the set of operations that are run for this test case.
+	Steps []TestStep
+
+	// Teardown will be called before the test case is over regardless
+	// of if the test succeeded or failed. This should return an error
+	// in the case that the test can't guarantee all resources were
+	// properly cleaned up.
+	//Teardown TestTeardownFunc
+
+	// AcceptanceTest, if set, the test case will be run only if
+	// the environment variable VAULT_ACC is set. If not this test case
+	// will be run as a unit test.
+	AcceptanceTest bool
+}
+
+// TestStep is a single step within a TestCase.
+type TestStep struct {
+	// Operation is the operation to execute
+	Operation logical.Operation
+
+	// Path is the request path. The mount prefix will be automatically added.
+	Path string
+
+	// Arguments to pass in
+	Data map[string]interface{}
+
+	// Check is called after this step is executed in order to test that
+	// the step executed successfully. If this is not set, then the next
+	// step will be called
+	Check TestCheckFunc
+
+	// PreFlight is called directly before execution of the request, allowing
+	// modification of the request parameters (e.g. Path) with dynamic values.
+	//PreFlight PreFlightFunc
+
+	// ErrorOk, if true, will let erroneous responses through to the check
+	ErrorOk bool
+
+	// Unauthenticated, if true, will make the request unauthenticated.
+	Unauthenticated bool
+
+	// RemoteAddr, if set, will set the remote addr on the request.
+	RemoteAddr string
+
+	// ConnState, if set, will set the tls connection state
+	//ConnState *tls.ConnectionState
+}
 
 var (
 	stepCount               = 0
@@ -54,9 +127,10 @@ var (
 
 // otherNameRaw describes a name related to a certificate which is not in one
 // of the standard name formats. RFC 5280, 4.2.1.6:
-// OtherName ::= SEQUENCE {
-//      type-id    OBJECT IDENTIFIER,
-//      value      [0] EXPLICIT ANY DEFINED BY type-id }
+//
+//	OtherName ::= SEQUENCE {
+//	     type-id    OBJECT IDENTIFIER,
+//	     value      [0] EXPLICIT ANY DEFINED BY type-id }
 type otherNameRaw struct {
 	TypeID asn1.ObjectIdentifier
 	Value  asn1.RawValue
@@ -98,7 +172,7 @@ func getOtherSANsFromX509Extensions(exts []pkix.Extension) ([]otherNameUtf8, err
 			var other otherNameRaw
 			_, err := asn1.UnmarshalWithParams(data, &other, "tag:0")
 			if err != nil {
-				return errwrap.Wrapf("could not parse requested other SAN: {{err}}", err)
+				return fmt.Errorf("could not parse requested other SAN: %v", err)
 			}
 			val, err := other.extractUTF8String()
 			if err != nil {
@@ -825,9 +899,9 @@ func TestBackend_Roles(t *testing.T) {
 			initTest.Do(setCerts)
 			b, storage := createBackendWithStorage(t, &atlas.MockClient{})
 
-			testCase := logicaltest.TestCase{
+			testCase := TestCase{
 				LogicalBackend: b,
-				Steps:          []logicaltest.TestStep{},
+				Steps:          []TestStep{},
 			}
 
 			testCase.Steps = append(testCase.Steps, generateRoleSteps(t, tc.useCSR)...)
@@ -892,7 +966,7 @@ func TestBackend_Roles(t *testing.T) {
 }
 
 // Generates steps to test out various role permutations
-func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
+func generateRoleSteps(t *testing.T, useCSRs bool) []TestStep {
 	roleVals := roleEntry{
 		MaxTTL:    12 * time.Hour,
 		KeyType:   "rsa",
@@ -900,20 +974,20 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		RequireCN: true,
 	}
 	issueVals := certutil.IssueData{}
-	ret := []logicaltest.TestStep{}
+	ret := []TestStep{}
 
-	roleTestStep := logicaltest.TestStep{
+	roleTestStep := TestStep{
 		Operation: logical.UpdateOperation,
 		Path:      "roles/test",
 	}
-	var issueTestStep logicaltest.TestStep
+	var issueTestStep TestStep
 	if useCSRs {
-		issueTestStep = logicaltest.TestStep{
+		issueTestStep = TestStep{
 			Operation: logical.UpdateOperation,
 			Path:      "sign/test",
 		}
 	} else {
-		issueTestStep = logicaltest.TestStep{
+		issueTestStep = TestStep{
 			Operation: logical.UpdateOperation,
 			Path:      "issue/test",
 		}
@@ -952,7 +1026,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 	}
 
 	// Adds tests with the currently configured issue/role information
-	addTests := func(testCheck logicaltest.TestCheckFunc) {
+	addTests := func(testCheck TestCheckFunc) {
 		stepCount++
 		//t.Logf("test step %d\nrole vals: %#v\n", stepCount, roleVals)
 		stepCount++
@@ -972,7 +1046,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		ret = append(ret, issueTestStep)
 	}
 
-	getCountryCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getCountryCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -993,7 +1067,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		}
 	}
 
-	getOuCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getOuCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1014,7 +1088,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		}
 	}
 
-	getOrganizationCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getOrganizationCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1035,7 +1109,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		}
 	}
 
-	getLocalityCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getLocalityCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1056,7 +1130,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		}
 	}
 
-	getProvinceCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getProvinceCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1077,7 +1151,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		}
 	}
 
-	getStreetAddressCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getStreetAddressCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1098,7 +1172,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 		}
 	}
 
-	getPostalCodeCheck := func(role roleEntry) logicaltest.TestCheckFunc {
+	getPostalCodeCheck := func(role roleEntry) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1121,7 +1195,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 
 	// Returns a TestCheckFunc that performs various validity checks on the
 	// returned certificate information, mostly within checkCertsAndPrivateKey
-	getCnCheck := func(name string, role roleEntry, key crypto.Signer, usage x509.KeyUsage, extUsage x509.ExtKeyUsage, validity time.Duration) logicaltest.TestCheckFunc {
+	getCnCheck := func(name string, role roleEntry, key crypto.Signer, usage x509.KeyUsage, extUsage x509.ExtKeyUsage, validity time.Duration) TestCheckFunc {
 		var certBundle certutil.CertBundle
 		return func(resp *logical.Response) error {
 			err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1512,7 +1586,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 
 	// IP SAN tests
 	{
-		getIpCheck := func(expectedIp ...net.IP) logicaltest.TestCheckFunc {
+		getIpCheck := func(expectedIp ...net.IP) TestCheckFunc {
 			return func(resp *logical.Response) error {
 				var certBundle certutil.CertBundle
 				err := mapstructure.Decode(resp.Data, &certBundle)
@@ -1532,7 +1606,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 				return nil
 			}
 		}
-		addIPSANTests := func(useCSRs, useCSRSANs, allowIPSANs, errorOk bool, ipSANs string, csrIPSANs []net.IP, check logicaltest.TestCheckFunc) {
+		addIPSANTests := func(useCSRs, useCSRSANs, allowIPSANs, errorOk bool, ipSANs string, csrIPSANs []net.IP, check TestCheckFunc) {
 			if useCSRs {
 				csrTemplate := &x509.CertificateRequest{
 					Subject: pkix.Name{
@@ -1586,7 +1660,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 
 	{
 
-		addOtherSANTests := func(useCSRs, useCSRSANs bool, allowedOtherSANs []string, errorOk bool, otherSANs []string, csrOtherSANs []otherNameUtf8, check logicaltest.TestCheckFunc) {
+		addOtherSANTests := func(useCSRs, useCSRSANs bool, allowedOtherSANs []string, errorOk bool, otherSANs []string, csrOtherSANs []otherNameUtf8, check TestCheckFunc) {
 			otherSansMap := func(os []otherNameUtf8) map[string][]string {
 				ret := make(map[string][]string)
 				for _, o := range os {
@@ -1669,7 +1743,7 @@ func generateRoleSteps(t *testing.T, useCSRs bool) []logicaltest.TestStep {
 	}
 
 	// Listing test
-	ret = append(ret, logicaltest.TestStep{
+	ret = append(ret, TestStep{
 		Operation: logical.ListOperation,
 		Path:      "roles/",
 		Check: func(resp *logical.Response) error {
