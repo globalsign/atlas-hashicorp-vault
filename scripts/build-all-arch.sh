@@ -37,3 +37,6 @@ solaris	amd64
 windows	386
 windows	amd64
 EOF
+
+# Building Plugin to run in containers
+CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -tags=containers​ -o "release/atlas-linux-containers" cmd/atlas/main.go

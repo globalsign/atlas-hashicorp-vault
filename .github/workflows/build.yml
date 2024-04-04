@@ -1,8 +1,7 @@
-on:
-  push:
-    tags:
-      - '*'
-name: Build
+name: Build and Publish
+
+on: workflow_dispatch
+
 jobs:
   test:
     strategy:
@@ -21,11 +20,13 @@ jobs:
       shell: bash
       run:
         ./scripts/build-all-arch.sh
+    - name: Set version
+      run: VER=$(cat version.txt)
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: release/atlas-*
-        tag: v1.0
-        overwrite: true
+        tag: $VER
+        overwrite: false
         file_glob: true
