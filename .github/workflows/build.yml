@@ -3,7 +3,7 @@ name: Build and Publish
 on: workflow_dispatch
 
 jobs:
-  test:
+  build_and_publish:
     strategy:
       matrix:
         go-version: [1.21.x]
@@ -18,14 +18,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Build Binaries
-      shell: bash
-      run:
-        ./scripts/build-all-arch.sh
+    # - name: Build Binaries
+    #   shell: bash
+    #   run:
+    #     ./scripts/build-all-arch.sh
 
     - name: Set version
       run: VER=$(cat version.txt)
+           echo "$VER"
            echo "VERSION=$VER" >> $GITHUB_ENV
+           echo "$GITHUB_ENV"
 
     - name: Create release
       id: create_release
