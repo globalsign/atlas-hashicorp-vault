@@ -1,0 +1,5 @@
+.private
+vault
+main
+release/*
+.vscode

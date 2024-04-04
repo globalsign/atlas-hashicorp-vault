@@ -70,7 +70,8 @@ type dataBundle struct {
 }
 
 // creationParameters are the values provided by vault issuance calls, this comes from Vault PKI;
-// 	maintained to support translation and future parameter support.
+//
+//	maintained to support translation and future parameter support.
 type creationParameters struct {
 	Subject                       pkix.Name
 	DNSNames                      []string
@@ -431,7 +432,8 @@ func parseOtherSANs(others []string) (map[string][]string, error) {
 }
 
 // trustChainToBlocks is an atlas helper, that converts the pem trust chain to golang certificate blocks.
-//   It uses some Vault PKI helpers, which is why it resides here.
+//
+//	It uses some Vault PKI helpers, which is why it resides here.
 func trustChainToBlocks(ctx context.Context, client atlas.Client) ([]*certutil.CertBlock, error) {
 	trustChain, err := client.GetTrustChain(ctx)
 	if err != nil {
@@ -452,8 +454,9 @@ func trustChainToBlocks(ctx context.Context, client atlas.Client) ([]*certutil.C
 // generateCert Generates a Keypair and Issues a certificate through ATLAS.
 //
 // This code is derrived from Vault PKI to maintain interface support. CA validation behavior
-//  has been removed as Atlas holds the CA, and CSR generation has been ported to a struct to support reusability,
-//  finnally Issuance goes through the atlas client which is appended to the pre-existing signature.
+//
+//	has been removed as Atlas holds the CA, and CSR generation has been ported to a struct to support reusability,
+//	finnally Issuance goes through the atlas client which is appended to the pre-existing signature.
 func generateCert(ctx context.Context,
 	b *Backend,
 	data *dataBundle,
@@ -1026,7 +1029,6 @@ func addKeyUsages(data *dataBundle, certTemplate *x509.Certificate) {
 }
 
 // addPolicyIdentifiers adds certificate policies extension
-//
 func addPolicyIdentifiers(data *dataBundle, certTemplate *x509.Certificate) {
 	for _, oidstr := range data.params.PolicyIdentifiers {
 		oid, err := stringToOid(oidstr)

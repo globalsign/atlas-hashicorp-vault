@@ -92,6 +92,6 @@ func Test_ValidateIssueCertRequest(t *testing.T) {
 		panic(fmt.Errorf("Wrong Algorithm Submitted: %v", req.Signature.Algorithm))
 	}
 	if req.Signature.HashAlgorithm != "SHA-256" {
-		panic(fmt.Errorf("Wrong HashAlgorithm Submitted: %v", req.Signature.HashAlgorithm ))
+		panic(fmt.Errorf("Wrong HashAlgorithm Submitted: %v", req.Signature.HashAlgorithm))
 	}
 }

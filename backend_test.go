@@ -11,7 +11,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -42,12 +41,12 @@ func loadAtlasTestCreds() (*TestCreds, error) {
 	json.NewDecoder(apif).Decode(&apiOut)
 
 	// Read Cert
-	clientCertFile, err := ioutil.ReadFile(testKeyLocation + "cert.pem")
+	clientCertFile, err := os.ReadFile(testKeyLocation + "cert.pem")
 	if err != nil {
 		return nil, err
 	}
 
-	clientCertKeyFile, err := ioutil.ReadFile(testKeyLocation + "key.pem")
+	clientCertKeyFile, err := os.ReadFile(testKeyLocation + "key.pem")
 	if err != nil {
 		return nil, err
 	}
