@@ -32,7 +32,6 @@ import (
 	"github.com/hashicorp/vault/sdk/helper/strutil"
 	"github.com/hashicorp/vault/sdk/logical"
 
-	//logicaltest "github.com/hashicorp/vault/helper/testhelpers/logical"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/crypto/cryptobyte"
 	cbbasn1 "golang.org/x/crypto/cryptobyte/asn1"
