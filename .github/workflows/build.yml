@@ -25,10 +25,8 @@ jobs:
 
     - name: Set version
       run: |
-           VER=$(cat version.txt)
-           echo "$VER"
-           echo "VERSION=TESTING" >> $GITHUB_ENV
-           echo "$GITHUB_ENV"
+        VER=$(cat version.txt)
+        echo "VERSION=$VER" >> $GITHUB_ENV
 
     - name: Create release
       id: create_release
