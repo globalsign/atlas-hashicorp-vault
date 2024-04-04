@@ -34,8 +34,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "$VERSION"
-        name: "Release  $VERSION"
+        tag_name: ${{ env.VERSION }}
+        name:  Release  ${{ env.VERSION }}
         files: release/atlas-*
         draft: true
         prerelease: false
