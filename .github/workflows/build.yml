@@ -18,10 +18,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # - name: Build Binaries
-    #   shell: bash
-    #   run:
-    #     ./scripts/build-all-arch.sh
+    - name: Build Binaries
+      shell: bash
+      run:
+        ./scripts/build-all-arch.sh
 
     - name: Set version
       run: |
