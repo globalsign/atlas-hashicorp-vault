@@ -24,9 +24,10 @@ jobs:
     #     ./scripts/build-all-arch.sh
 
     - name: Set version
-      run: VER=$(cat version.txt)
+      run: |
+           VER=$(cat version.txt)
            echo "$VER"
-           echo "VERSION=$VER" >> $GITHUB_ENV
+           echo "VERSION=TESTING" >> $GITHUB_ENV
            echo "$GITHUB_ENV"
 
     - name: Create release
