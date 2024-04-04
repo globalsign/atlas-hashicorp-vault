@@ -14,20 +14,27 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go-version }}
+
     - name: Checkout code
       uses: actions/checkout@v2
+
     - name: Build Binaries
       shell: bash
       run:
         ./scripts/build-all-arch.sh
+
     - name: Set version
       run: VER=$(cat version.txt)
            echo "VERSION=$VER" >> $GITHUB_ENV
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
+
+    - name: Create release
+      id: create_release
+      uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: release/atlas-*
-        tag: ${{ env.VERSION }}
-        overwrite: false
-        file_glob: true
+        tag_name: "$VERSION"
+        name: "Release  $VERSION"
+        files: release/atlas-*
+        draft: true
+        prerelease: false
