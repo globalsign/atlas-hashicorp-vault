@@ -1,3 +1,5 @@
+# Introduction
+The plugin basically provides the capability to enable the atlas as a secret engine which will store the ATLAS api secrets and make them persistent. The GlobalSign Atlas secret engine generates, issues, and manages certificates dynamically in your ATLAS account. This simplifies certificate issuance and life cycle management, as the engine can manage key generation, life cycle. Additionally this enables codifying and mapping issuance policy to internal authentication methods such as public cloud credentials or SSO solutions.
 # GlobalSign Atlas Certificate Provider Plugin for Hashicorp Vault
 
 `atlas-hashicorp-vault` plugin lets you manage issue GlobalSign Atlas backed certificates in vault.
@@ -10,6 +12,19 @@
 ## Demo
 [![asciicast](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB.svg)](https://asciinema.org/a/K5k9khe33IN7Ewot6yMN6yjBB)
 ## Installation
+Below are the installations steps for ubuntu 20.04 or above
+
+Golang installation
+a. $sudo apt install golang -y
+
+Update the packages
+a. $sudo apt-get update && sudo apt-get upgrade -y
+b. sudo apt install net-tools
+
+Installing HC Vault Packages.
+a. $wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+b. $echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+c. $sudo apt update && sudo apt install vault
 
 Before you can use the Plugin's API you will need to install the vault plugin:
 
@@ -22,7 +37,7 @@ _**(Note: We have automated most of these steps and user can directly navigate t
    plugin are released.
 
    ```bash
-   $ curl https://github.com/globalsign/atlas-hashicorp-vault/releases/latest/download/atlas-linux-amd64 -o /etc/vault/vault_plugins/atlas
+   $ sudo mkdir -p /etc/vault/vault_plugins/ && sudo curl https://github.com/globalsign/atlas-hashicorp-vault/releases/latest/download/atlas-linux-amd64 -o /etc/vault/vault_plugins/atlas
    $ chmod +x /etc/vault/vault_plugins/atlas
    ```
 
@@ -45,7 +60,7 @@ _**(Note: We have automated most of these steps and user can directly navigate t
 5. Get the SHA-256 checksum of the `atlas-hashicorp-vault` plugin binary:
 
    ```bash
-   $ PLUGIN_SHA256=$(sha256sum /etc/vault/vault_plugins/atlas-hashicorp-vault | cut -d' ' -f1)
+   $ PLUGIN_SHA256=$(sha256sum /etc/vault/vault_plugins/atlas | cut -d' ' -f1)
    ```
 
 6. Register the `atlas-hashicorp-vault` plugin in the Vault
